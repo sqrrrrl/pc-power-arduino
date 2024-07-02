@@ -12,13 +12,36 @@ const int HARD_SHUTDOWN_PRESS_TIME = 5000;
 const char ssid[] = SECRET_SSID;
 const char pass[] = SECRET_PASS;
 
+WiFiClient client;
+int status = WL_IDLE_STATUS;
+
 void setup() {
-  resetControlPins();
+  Serial.begin(9600);
+  while (!Serial) {
+    ;
+  }
+
+  while (status != WL_CONNECTED) {
+    Serial.print("Attempting to connect to ");
+    Serial.println(ssid);
+    status = WiFi.begin(ssid, pass);
+    
+    // wait 10 seconds for connection:
+    delay(10000);
+  }
+
+  Serial.println("Connected!");
+  Serial.print("SSID: ");
+  Serial.println(WiFi.SSID());
+
+  IPAddress ip = WiFi.localIP();
+  Serial.print("IP Address: ");
+  Serial.println(ip);
 }
 
 void resetControlPins(){
   pinMode(POWER_CONTROL_PIN, INPUT);
-  pinMode(RESET_CONTROL_PIN, INPUT)
+  pinMode(RESET_CONTROL_PIN, INPUT);
 }
 
 void loop() {
