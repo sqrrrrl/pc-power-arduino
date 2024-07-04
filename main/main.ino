@@ -26,7 +26,7 @@ const String deviceSecret = DEVICE_SECRET;
 int status = WL_IDLE_STATUS;
 int lastPcStatus = PC_STATUS_OFF;
 int retries = 0;
-WiFiClient wifi;
+WiFiSSLClient wifi;
 WebSocketClient ws = WebSocketClient(wifi, serverAddress, serverPort);
 
 void setup() {
@@ -59,9 +59,13 @@ void resetControlPins(){
 void loop() {
   delay(retries * RETRY_TIMEOUT);
   Serial.println("Attempting to connect to the server");
-  if(ws.begin("/devices/gateway?device_id=" + deviceId + "&secret=" + deviceSecret) == 0){
+  int status = ws.begin("/devices/gateway?device_id=" + deviceId + "&secret=" + deviceSecret);
+  if(status == 0){
     retries = 0;
     Serial.println("Connected!");
+  }else{
+    Serial.print("Failed to connect with status ")
+    Serial.println(status);
   }
 
   while (ws.connected()) {
