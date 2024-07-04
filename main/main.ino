@@ -3,8 +3,8 @@
 #include "WiFiS3.h"
 #include "environment.h"
 
-const int POWER_CONTROL_PIN = 3;
-const int RESET_CONTROL_PIN = 9;
+const int POWER_CONTROL_PIN = 3; // POWER SW+
+const int RESET_CONTROL_PIN = 5; // RESET SW+
 const uint8_t LED = A4; // LED+ Analog pin
 const int PRESS_TIME = 400;
 const int HARD_SHUTDOWN_PRESS_TIME = 5000;
@@ -12,6 +12,9 @@ const int RETRY_TIMEOUT = 1000;
 const int ANALOG_PC_ON = 600;
 const int PC_STATUS_ON = 1;
 const int PC_STATUS_OFF = 0;
+const int OP_POWER_SWITCH = 1;
+const int OP_RESET_SWITCH = 2;
+const int OP_HARD_SHUTDOWN = 3;
 
 const char ssid[] = SECRET_SSID;
 const char pass[] = SECRET_PASS;
@@ -75,8 +78,18 @@ void loop() {
     int messageSize = ws.parseMessage();
 
     if (messageSize > 0) {
-      Serial.print("Received a message: ");
-      Serial.println(ws.readString());
+      JSONVar message = JSON.parse(ws.readString());
+      switch((int)message["op"]){
+        case OP_POWER_SWITCH:
+          pressPowerSwitch();
+          break;
+        case OP_RESET_SWITCH:
+          pressResetSwitch();
+          break;
+        case OP_HARD_SHUTDOWN:
+          hardShutdown();
+          break;
+      }
     }
     resetControlPins();
     delay(1000);
