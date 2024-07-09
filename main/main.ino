@@ -6,6 +6,7 @@
 const int POWER_CONTROL_PIN = 3; // POWER SW+
 const int RESET_CONTROL_PIN = 5; // RESET SW+
 const uint8_t LED = A4; // LED+ Analog pin
+const int ARDUINO_RESET_PIN = 11;
 const int PRESS_TIME = 400;
 const int HARD_SHUTDOWN_PRESS_TIME = 5000;
 const int RETRY_TIMEOUT = 1000;
@@ -63,8 +64,10 @@ void loop() {
   if(status == 0){
     retries = 0;
     Serial.println("Connected!");
+  }else if(status == -1){
+    resetArduino();
   }else{
-    Serial.print("Failed to connect with status ")
+    Serial.print("Failed to connect with status ");
     Serial.println(status);
   }
 
@@ -117,6 +120,13 @@ void hardShutdown(){
   pinMode(POWER_CONTROL_PIN, OUTPUT);
   digitalWrite(POWER_CONTROL_PIN, LOW);
   delay(HARD_SHUTDOWN_PRESS_TIME);
+}
+
+void resetArduino(){
+  delay(10000);
+  pinMode(ARDUINO_RESET_PIN, OUTPUT);
+  digitalWrite(ARDUINO_RESET_PIN, LOW);
+  while(true);
 }
 
 int getPcStatus(){
