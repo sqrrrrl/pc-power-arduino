@@ -25,7 +25,6 @@ const String deviceId = DEVICE_ID;
 const String deviceSecret = DEVICE_SECRET;
 
 int status = WL_IDLE_STATUS;
-int lastPcStatus = PC_STATUS_OFF;
 int retries = 0;
 WiFiSSLClient wifi;
 WebSocketClient ws = WebSocketClient(wifi, serverAddress, serverPort);
@@ -58,6 +57,7 @@ void resetControlPins(){
 }
 
 void loop() {
+  int lastPcStatus = PC_STATUS_OFF;
   delay(retries * RETRY_TIMEOUT);
   Serial.println("Attempting to connect to the server");
   int status = ws.begin("/devices/gateway?device_id=" + deviceId + "&secret=" + deviceSecret);
