@@ -10,6 +10,8 @@ const int ARDUINO_RESET_PIN = 11;
 const int PRESS_TIME = 400;
 const int HARD_SHUTDOWN_PRESS_TIME = 5000;
 const int RETRY_TIMEOUT = 1000;
+const int WIFI_LOGIN_CHECK_INTERVAL = 100;
+const int WIFI_TIMEOUT = 100000;
 const int ANALOG_PC_ON = 600;
 const int PC_STATUS_ON = 1;
 const int PC_STATUS_OFF = 0;
@@ -24,7 +26,6 @@ const int serverPort = API_PORT;
 const String deviceId = DEVICE_ID;
 const String deviceSecret = DEVICE_SECRET;
 
-int status = WL_IDLE_STATUS;
 int retries = 0;
 WiFiSSLClient wifi;
 WebSocketClient ws = WebSocketClient(wifi, serverAddress, serverPort);
@@ -35,14 +36,21 @@ void setup() {
     ;
   }
 
-  while (status != WL_CONNECTED) {
-    Serial.print("Attempting to connect to ");
-    Serial.println(ssid);
-    status = WiFi.begin(ssid, pass);
-    delay(RETRY_TIMEOUT);
+  int connectTime = 0;
+  Serial.print("Attempting to connect to ");
+  Serial.print(ssid);
+  WiFi.begin(ssid, pass);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    connectTime += WIFI_LOGIN_CHECK_INTERVAL;
+    if(connectTime >= WIFI_TIMEOUT){
+      resetArduino();
+    }
+    Serial.print(".");
+    delay(WIFI_LOGIN_CHECK_INTERVAL);
   }
 
-  Serial.println("Connected!");
+  Serial.println("\nConnected!");
   Serial.print("SSID: ");
   Serial.println(WiFi.SSID());
 
@@ -123,6 +131,7 @@ void hardShutdown(){
 }
 
 void resetArduino(){
+  WiFi.disconnect();
   delay(10000);
   pinMode(ARDUINO_RESET_PIN, OUTPUT);
   digitalWrite(ARDUINO_RESET_PIN, LOW);
